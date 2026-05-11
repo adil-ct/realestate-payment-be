@@ -396,9 +396,9 @@ export const catchAlchemyEvent = async (notification) => {
 export const catchStripeEvent = async (data) => {
   try {
     logger.info('Inside catch stripe request service');
-    logger.info(data);
-    logger.info(data?.data?.object?.status);
-    const user = await User.findOne({ blockchainAddress: data?.data?.object?.transaction_details?.wallet_address });
+    console.log('Stripe Event Received:', data);
+
+    const user = await User.findOne({ 'stripe.customerId': data?.data?.object?.customer });
 
     switch (data.type) {
       case 'payment_intent.canceled':

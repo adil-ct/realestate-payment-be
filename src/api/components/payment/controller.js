@@ -253,17 +253,21 @@ export const walletBalance = async (req, res) => {
     }
     let data;
     if (address) {
-      let balance = await fetchUSDCBalance(address);
+      let balance = {
+        balance: 0,
+        credits: user?.credits ? user.credits : 0,
+      };
+      //await fetchUSDCBalance(address);
       // if (balance?.error) return handleError({ res, err: balance.error });
       // data = {
       //   balance: parseFloat(balance.toFixed(2)),
       //   credits: user?.credits ? user.credits : 0,
       // };
       data = {
-          balance: 0,
-          credits: user?.credits ? user.credits : 0,
-        };
-      
+        balance: 0,
+        credits: user?.credits ? user.credits : 0,
+      };
+
       if (process.env.NODE_ENV === 'production') {
         cio.identify(user.email, {
           account_balance: '$' + parseFloat(balance.toFixed(2)),
