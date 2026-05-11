@@ -77,6 +77,7 @@ const config = {
     },
     secretKey: 'STRIPE_SECRET_KEY',
     webhookSecret: 'STRIPE_WEBHOOK_SECRET',
+    connectAccountId: 'STRIPE_CONNECT_ACCOUNT_ID',
   },
   baseUrl: 'BASE_URL',
   persona: {
@@ -176,6 +177,7 @@ const proxyConfig = new Proxy(config, {
           STRIPE_ONRAMP_SESSION_URL: process.env.STRIPE_ONRAMP_SESSION_URL,
           STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
           STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+          STRIPE_CONNECT_ACCOUNT_ID: process.env.STRIPE_CONNECT_ACCOUNT_ID,
 
           BASE_URL: process.env.BASE_URL,
           CUSTOMER_IO_SITE_ID: process.env.CUSTOMER_IO_SITE_ID,

@@ -164,6 +164,8 @@ export const paymentIntent = async (userId, customerId, data, property) => {
   try {
     logger.info('Inside payment Intent service');
     if (!customerId || !data) return { error: 'Invalid Payment Intent' };
+    const stripeConnectAccountId = property.stripeConnect || (await config.stripe).connectAccountId;
+    if (!stripeConnectAccountId) return { error: 'Stripe Connect account not configured', status: 500 };
 
     /* Check if request tokens are available */
     const tokensAvailable = await tokensAvailableAtSale(property._id);
@@ -220,7 +222,7 @@ export const paymentIntent = async (userId, customerId, data, property) => {
         confirm: true,
         application_fee_amount: fees,
         transfer_data: {
-          destination: property.stripeConnect ?? constants.stripeConnect,
+          destination: stripeConnectAccountId,
         },
         statement_descriptor: property?.otherInfo.title,
         statement_descriptor_suffix: property?.otherInfo.title,
@@ -281,7 +283,7 @@ export const paymentIntent = async (userId, customerId, data, property) => {
         balanceTx: '',
         chargeId: '',
         paymentMethodId: data.paymentMethodId ?? '',
-        destination: property.stripeConnect ?? constants.stripeConnect,
+        destination: stripeConnectAccountId,
         propertyId: property?._id,
         propertyName: property?.otherInfo.title ?? '',
         holdTokens: data?.tokens,

@@ -6,7 +6,7 @@ const constants = {
     ACH_DEPOSIT_SUCCESS: 'ACH_DEPOSIT_SUCCESS',
     PAYMENT_FAILED_SCENARIOS: 'PAYMENT_FAILED_SCENARIOS',
   },
-  stripeConnect: 'acct_1NJ2SbHB5XU2m7pf',
+  stripeConnect: null,
   plaid: {
     client_name: 'mogul',
   },
