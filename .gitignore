@@ -1,0 +1,14 @@
+# Dependency dirctories
+node_modules/
+package-lock.json
+
+# dotenv environment variables file
+.env
+
+# log files
+data-to-send
+logs
+.history
+.vscode
+
+*.key

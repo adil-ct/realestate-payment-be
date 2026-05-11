@@ -1,0 +1,64 @@
+name: Build and push the Docker image to ECR
+
+on:
+  push:
+    branches:
+      - dev
+      
+env:
+  AWS_REGION: us-west-1
+  ECR_REPOSITORY: becassettoken
+
+jobs:
+  build-and-deploy:
+    name: Build and Push Docker Image to ECR
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with: 
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-west-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Tag, and Push Image to Amazon ECR
+        run: |
+          SERVICE_NAME=$(echo $(basename $GITHUB_REPOSITORY) | tr -cd '[:alnum:]_.-' | awk '{print tolower($0)}')
+          BRANCH_NAME=$(echo "${GITHUB_REF#refs/heads/}" | awk '{print tolower($0)}')
+          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7 | awk '{print tolower($0)}')
+          IMAGE_TAG=${BRANCH_NAME}-${SHORT_SHA}
+          DEPLOYMENT_IMAGE=${{ steps.login-ecr.outputs.registry }}/${ECR_REPOSITORY}:${SERVICE_NAME}-${IMAGE_TAG}
+          
+          echo "Building and pushing $DEPLOYMENT_IMAGE"
+          docker build -t $DEPLOYMENT_IMAGE .
+          docker push $DEPLOYMENT_IMAGE
+
+          echo "DEPLOYMENT_IMAGE=$DEPLOYMENT_IMAGE" >> $GITHUB_ENV
+
+      - name: Update Docker Compose on EC2 for payment Backend
+        run: |
+          sudo apt-get update && sudo apt-get install -y openssh-client
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.EC2_INSTANCE_IP }} >> ~/.ssh/known_hosts
+
+          # SSH into the EC2 instance and update Docker Compose for payment Backend
+          ssh -i ~/.ssh/id_rsa ec2-user@${{ secrets.EC2_INSTANCE_IP }} <<EOF
+          cd /home/ec2-user/docker/
+          # AWS ECR login to avoid image pull back off
+          aws ecr get-login-password --region us-west-1 | docker login --username AWS --password-stdin 471112842541.dkr.ecr.us-west-1.amazonaws.com
+          # Updating the docker-compose.yml to use the new image tag for payment service.
+          sed -i "s|image: 471112842541.dkr.ecr.us-west-1.amazonaws.com/becassettoken:solulab-re-mvp-be-payment-dev-.*|image: ${DEPLOYMENT_IMAGE}|g" docker-compose.yml
+          # Pulling the latest images and redeploying only the payment service
+          docker-compose pull payment
+          docker-compose up -d --no-deps payment
+          EOF

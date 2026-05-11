@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mogul-mvp-be-payment
+  namespace: mogul-dev
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Access-Control-Allow-Origin: *";
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: PUT, GET, POST, OPTIONS, DELETE,
+      PATCH
+    nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    #nginx.ingress.kubernetes.io/use-regex: "true"
+    
+spec:
+  rules:
+  - host: mvp-payment-api.investwithmogul.com
+    http:
+      paths:
+      - path: /api/v2/payment
+        pathType: Prefix
+        backend:
+          service:
+            name: mogul-mvp-be-payment-svc
+            port:
+              number: 80
+  ingressClassName: nginx
