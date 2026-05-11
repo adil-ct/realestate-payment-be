@@ -156,6 +156,9 @@ const userSchema = new Schema(
     rentCreditsOnHold: { type: Number, default: 0 },
     personaAccId: String,
     privateKey: String,
+    stripe: {
+      customerId: String,
+    },
   },
   {
     collection: 'user',

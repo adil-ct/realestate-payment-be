@@ -22,6 +22,18 @@ const stripe = new Stripe((await config.stripe).secretKey, {
   apiVersion: '2020-08-27',
 });
 
+export const createStripeCustomer = async (userId, email, name) => {
+  try {
+    logger.info('Inside createStripeCustomer service');
+    const customer = await stripe.customers.create({ email, name });
+    await User.updateOne({ _id: userId }, { 'stripe.customerId': customer.id });
+    return customer;
+  } catch (err) {
+    logger.error(err.message);
+    return { error: err.message };
+  }
+};
+
 export const addCardToCustomer = async (customerId, sourceToken, saveCard) => {
   try {
     logger.info('Inside add card to customer service');

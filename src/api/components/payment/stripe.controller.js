@@ -3,6 +3,7 @@ import logger from '../../config/logger.js';
 import messages from '../../config/messages.js';
 import { handleError, handleResponse } from '../../helpers/requestHandler.js';
 import {
+  createStripeCustomer,
   addCardToCustomer,
   removeCardFromCustomer,
   getAllCardsForUser,
@@ -23,7 +24,16 @@ export const addCardToStripe = async (req, res) => {
     logger.info('Inside add card to customer controller');
     const user = req.user;
     const { sourceToken, saveCard } = req.body;
-    const card = await addCardToCustomer(user?.stripe.customerId, sourceToken, saveCard);
+
+    let customerId = user?.stripe?.customerId;
+    if (!customerId) {
+      const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
+      const customer = await createStripeCustomer(user._id, user.email, fullName);
+      if (customer?.error) return handleError({ res, err: customer.error });
+      customerId = customer.id;
+    }
+
+    const card = await addCardToCustomer(customerId, sourceToken, saveCard);
     if (card?.error) return handleError({ res, err: card.error });
     return handleResponse({ res, msg: messages.STRIPE_ADD_CARD, data: card });
   } catch (err) {
