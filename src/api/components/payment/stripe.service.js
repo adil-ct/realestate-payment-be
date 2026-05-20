@@ -239,7 +239,7 @@ export const paymentIntent = async (userId, customerId, data, property) => {
       const status = intent?.status === 'processing' ? 'pending' : intent.status;
 
       const holdOrders = await holdTokensInOrders(data.tokens, property._id);
-      await holdUserCredits(data.credits, userId);
+      await holdUserCredits(data.credits, 0, userId);
       const payment = await Payment.create({
         id: intent.id,
         amount: {
@@ -267,7 +267,7 @@ export const paymentIntent = async (userId, customerId, data, property) => {
       return payment;
     } else {
       const holdOrders = await holdTokensInOrders(data.tokens, property._id);
-      await holdUserCredits(data.credits, userId);
+      await holdUserCredits(data.credits, 0, userId);
       const payment = await Payment.create({
         amount: {
           amount: 0,
