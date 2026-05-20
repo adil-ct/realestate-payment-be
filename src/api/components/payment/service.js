@@ -390,6 +390,7 @@ export const getUserTransaction = async (user, query) => {
                   // },
                   status: 1,
                   accountInfo: 1,
+                  propertyId: 1,
                 },
               },
             ])
@@ -452,6 +453,7 @@ export const getUserTransaction = async (user, query) => {
                   },
                   status: 1,
                   accountInfo: 1,
+                  propertyId: 1,
                 },
               },
             ])
@@ -483,6 +485,7 @@ export const getUserTransaction = async (user, query) => {
           updatedAt: item.data[0].updatedAt,
           createdAt: item.data[0].createdAt,
           credits: item.data[0]?.credits ?? 0,
+          propertyId: item.data[0].propertyId,
         };
         if (item.data[0].transferType === 'received') {
           resultObj.source = item.data[0].admin && !admin ? 'Admin' : item.data[0].merchant ? 'Merchant' : item?.data[0]?.propertyName ? item?.data[0]?.propertyName : 'Property';
@@ -565,6 +568,7 @@ export const getUserTransaction = async (user, query) => {
           createdAt: 1,
           source: '$propertyDetails.otherInfo.title',
           destination: 'My mogul wallet',
+          propertyId: '$_property',
         },
       },
     ]).toArray();
